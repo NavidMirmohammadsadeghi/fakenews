@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <title>Fake News Visualization</title>
+
+    <!-- jquery -->
+    <script
+    src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+    <!-- d3 -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!-- datatables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.18/b-1.5.4/b-colvis-1.5.4/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.18/b-1.5.4/b-colvis-1.5.4/datatables.min.js"></script>
+
+    <!-- mds -->
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+    <script src="./fake-news-mds.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h2 id="vis-title">Fake News Visualization</h2>
+        <h5>By Team Поддельные (pronounced “Poddel'nyye novosti”)</h5>
+        <h5>Team Members: Jeff McCullen and Navid Mirmohammadsadeghi</h5>
+        <br>
+        <div>
+            <div class="color-label">
+                <svg><circle fill="red"></circle></svg>Fake News
+            </div>
+            <div class="color-label">
+                <svg><circle fill="blue"></circle></svg>Unknown
+            </div>
+            <div class="color-label">
+                <svg><circle fill="green"></circle></svg>Trustworthy
+            </div>
+        </div>
+        <p class="my-p">Size represents the length of the article. The label is the source URL.</p>
+
+        <!-- Modal -->
+        <div class="modal fade left" id="details-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="details-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="details-ad-count">Advertisement Count</label>
+                        <p readonly class="form-control" id="details-ad-count"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-author">Author</label>
+                        <textarea readonly class="form-control" id="details-author"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-description">Description</label>
+                        <textarea readonly class="form-control" id="details-description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-description-sent">Description Sentiment</label>
+                        <p readonly class="form-control" id="details-description-sent"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-el-freq">Emotional Language Frequency</label>
+                        <p readonly class="form-control" id="details-el-freq"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-full-text-len">Full Text Length</label>
+                        <p readonly class="form-control" id="details-full-text-len"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-n-quotes">Number of Quotes</label>
+                        <p readonly class="form-control" id="details-n-quotes"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-text">Text</label>
+                        <textarea readonly class="form-control" id="details-text" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-text-len">Text Length</label>
+                        <p readonly class="form-control" id="details-text-len"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-text-sent">Text Sentiment</label>
+                        <p readonly class="form-control" id="details-text-sent"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-title-2">Title</label>
+                        <textarea readonly class="form-control" id="details-title-2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-title-sent">Title Sentiment</label>
+                        <p readonly class="form-control" id="details-title-sent"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="details-url">URL</label>
+                        <a class="form-control" id="details-url"></a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="vis-wrapper">
+            <svg id="info-vis" width="800" height="600" style="border:1px solid grey">
+                <g></g>
+            </svg>
+        </div>
+
+
+        <hr>
+
+        <div class="lower-pane">
+            <!-- Attribute Selection -->
+            <div class="my-collapse">
+                <button class="btn btn-link" type="button" 
+                    data-toggle="collapse" data-target="#attribute-collapse" 
+                    aria-expanded="false" aria-controls="attribute-collapse">Attribute Selection</button>
+                <div id="attribute-collapse" class="attribute-selection collapse">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="AdvertisementCount" id="advertisement-count-check">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Advertisement Count
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="CapitalWordTitle" id="advertisement-count-check">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Capital Word Title
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Description_sentiment">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Description Sentiment
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="EmotionalLanguage" id="emotional-lang-check">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Emotional Language
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="FullTextLength">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Full Text Length
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="NumberAuthor" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Number of Authors
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="NumberOfQuotes" id="quote-freq-check" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Number of Quotes
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="PotentialFake">
+                        <label class="form-check-label" for="defaultCheck1">
+                            Trustworthiness
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="TextLength" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Text Length
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Text_sentiment" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Text Sentiment
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="TitleLength" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Title Length
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="Title_sentiment" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Title Sentiment
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="UpdatedDate" id="updated-date-check" >
+                        <label class="form-check-label" for="defaultCheck1">
+                            Updated Date
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-collapse">
+                <button class="btn btn-link" type="button" 
+                    data-toggle="collapse" data-target="#param-collapse" 
+                    aria-expanded="false" aria-controls="param-collapse">Parameters</button>
+                <div id="param-collapse" class="collapse">
+                    <form>
+                        <div class="form-group">
+                            <label for="distance">Distance</label>
+                            <input type="range" min="0" max="500" class="form-control parameter" id="distance">
+                        </div>
+                        <div class="form-group">
+                            <label for="distance">Minkowsky r value</label>
+                            <input min="1" type="number" class="form-control parameter" id="r-value">
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="parameter form-check-input" id="show-url" >
+                            <label class="form-check-label" for="article-persist">Show URL</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="my-collapse">
+                <button class="btn btn-link" type="button" 
+                    data-toggle="collapse" data-target="#table-collapse" 
+                    aria-expanded="false" aria-controls="table-collapse">Table</button>
+                <button data-toggle="modal" data-target="#add-article-modal" class="collapse-btn btn btn-success" id="add-article-btn">Add Article</button>
+                <div id="table-collapse" class="collapse">
+                    <br>
+                    <table class="display" id="raw-data"></table>
+
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="add-article-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="add-article-modal-title">Add Article</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group">
+                                    <label for="article-title">Title</label>
+                                    <input type="text" class="form-control" id="article-title" placeholder="Enter title">
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-text">Text</label>
+                                    <textarea class="form-control" id="article-text" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-description">Description</label>
+                                    <textarea class="form-control" id="article-description" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-author">Author</label>
+                                    <input type="text" class="form-control" id="article-author" placeholder="Enter author">
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-url">URL</label>
+                                    <input type="text" class="form-control" id="article-url" placeholder="Enter URL">
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-ad-count">Advertisement Count</label>
+                                    <input type="number" name="advertisement-count" min="0"
+                                        class="form-control" id="article-ad-count" placeholder="Enter number of advertisements that appear on the page">
+                                </div>
+                                <div class="form-group">
+                                    <label for="article-update-date">Update Date</label>
+                                    <input type="date" class="form-control" 
+                                        id="article-update-date">
+                                </div>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="article-persist">
+                                    <label class="form-check-label" for="article-persist">Persist</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="submit-article-btn">Submit</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <!-- /Modal -->
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

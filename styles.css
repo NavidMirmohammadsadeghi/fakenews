@@ -1,0 +1,80 @@
+#vis-wrapper {
+    clear: both;
+}
+
+circle.highlight {
+    opacity: 0.8;
+}
+
+#vis-title {
+    text-align: center;
+}
+
+svg {
+    margin: 10px;
+}
+
+#container {
+    margin: 10px;
+    text-align: center;
+}
+
+.attribute-selection {
+    text-align: left;
+}
+
+.lower-pane {
+    text-align: left;
+}
+
+.my-collapse {
+    border: 1px solid grey;
+    padding: 5px;
+    margin: 5px;
+}
+
+.left {
+    text-align: left;
+}
+
+.small {
+    font: italic 10px sans-serif;
+    opacity: 0.8;
+}
+
+.points {
+    cursor: pointer;
+    opacity: 0.3;
+}
+
+.user-point {
+    opacity: 1;
+    stroke: black;
+    stroke-width: 5px;
+}
+
+.color-label {
+    text-align: left;
+    display: inline-block;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.color-label svg {
+    width: 10px;
+    height: 10px;
+}
+
+.color-label circle {
+    r: 5px;
+    cx: 5px;
+    cy: 5px;
+}
+
+.my-p {
+    margin: 0;
+}
+
+.collapse-btn {
+    float: right;
+}
