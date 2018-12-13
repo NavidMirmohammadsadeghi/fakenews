@@ -7,4 +7,6 @@ With pip installed on your system you can install the packages from the requirem
 
 Run the app.py code in the git repository that you cloned
 
-Open localhost:8000 on a browser (Tested on Chrome) 
+Open localhost:8000 on a browser (Tested on Chrome)
+
+Then Enjoy the Viusalized News Articles!
