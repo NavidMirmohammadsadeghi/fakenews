@@ -5,6 +5,6 @@ For Using the Visualization you need Python3 and pip installed
 
 With pip installed on your system you can install the packages from the requirements.txt file
 
-Run the app.py code
+Run the app.py code in the git repository that you cloned
 
 Open localhost:8000 on a browser (Tested on Chrome) 
